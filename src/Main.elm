@@ -78,18 +78,23 @@ update msg model =
 --     div [ classList [ ( "keyboard-row-" ++ i, True ) ] k.filter (\x -> x.row == i) ] k |> List.map (\x -> div [ classList [ ( "key", True ), ( "pressed", x.wasPressed ) ] ] [ text x.key ])
 
 
+filterKeyboardRow : Int -> Keys -> Keys
+filterKeyboardRow i k =
+    List.filter (\x -> x.row == i) k
+
+
+renderKeyboardRow : Keys -> Html Msg
+renderKeyboardRow k =
+    div [ classList [ ( "keyboard", True ) ] ] (List.map (\x -> div [ classList [ ( "key", True ), ( "pressed", x.wasPressed ) ] ] [ text x.key ]) k)
+
+
 makeKeyboardRow : Int -> Keys -> Html Msg
 makeKeyboardRow i k =
-    div [] (List.filter (\x -> x.row == i) |> List.map (\x -> div [ classList [ ( "key", True ), ( "pressed", x.wasPressed ) ] ] [ text x.key ])) k
-
-
-makeKeyboard : Keys -> Html Msg
-makeKeyboard k =
-    div [ classList [ ( "keyboard", True ) ] ] (List.map (\x -> div [ classList [ ( "key", True ), ( "pressed", x.wasPressed ) ] ] [ text x.key ]) k)
+    filterKeyboardRow i k |> renderKeyboardRow
 
 
 view : Model -> Html Msg
 view model =
     div []
-        [ makeKeyboard model.keys
+        [ makeKeyboardRow 2 model.keys
         ]
