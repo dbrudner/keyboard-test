@@ -3,7 +3,8 @@ module Main exposing (Model, Msg(..), init, main, update, view)
 import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onInput)
+import Html.Events exposing (on, onClick, onInput)
+import Json.Decode
 import String
 
 
@@ -24,6 +25,7 @@ type alias Key =
     , row : Int
     , column : Int
     , wasPressed : Bool
+    , code : Int
     }
 
 
@@ -40,7 +42,7 @@ init =
     Model
         (List.map
             (\x -> { x | wasPressed = False })
-            [ { key = "tab", row = 2, column = 1, wasPressed = True } ]
+            [ { key = "tab", row = 2, column = 2, wasPressed = False, code = 9 }, { code = 65, key = "a", row = 2, column = 1, wasPressed = False } ]
         )
 
 
@@ -49,13 +51,13 @@ init =
 
 
 type Msg
-    = KeyPressed String
+    = KeyPressed Int
 
 
-updateKeyboard keys s =
+updateKeyboard keys n =
     List.map
         (\x ->
-            if x.key == s then
+            if x.code == n then
                 { x | wasPressed = True }
 
             else
@@ -71,11 +73,9 @@ update msg model =
             { model | keys = updateKeyboard model.keys x }
 
 
-
--- VIEW
--- makeKeyboardRow : Int -> Keys -> Html Msg
--- makeKeyboardRow i k =
---     div [ classList [ ( "keyboard-row-" ++ i, True ) ] k.filter (\x -> x.row == i) ] k |> List.map (\x -> div [ classList [ ( "key", True ), ( "pressed", x.wasPressed ) ] ] [ text x.key ])
+sortKeyboardRow : Keys -> Keys
+sortKeyboardRow k =
+    List.sortBy .column k
 
 
 filterKeyboardRow : Int -> Keys -> Keys
@@ -90,11 +90,17 @@ renderKeyboardRow k =
 
 makeKeyboardRow : Int -> Keys -> Html Msg
 makeKeyboardRow i k =
-    filterKeyboardRow i k |> renderKeyboardRow
+    filterKeyboardRow i k |> sortKeyboardRow |> renderKeyboardRow
+
+
+onKeyUp : (Int -> msg) -> Attribute msg
+onKeyUp tagger =
+    Html.Events.on "keyup" (Json.Decode.map tagger Html.Events.keyCode)
 
 
 view : Model -> Html Msg
 view model =
     div []
         [ makeKeyboardRow 2 model.keys
+        , div [ onClick (KeyPressed 9) ] [ text "hey" ]
         ]
