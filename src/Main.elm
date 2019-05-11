@@ -3,7 +3,7 @@ module Main exposing (Model, Msg(..), init, main, update, view)
 import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (keyCode, on, onClick, onInput)
+import Html.Events exposing (custom, keyCode, onClick)
 import Json.Decode as Json
 import String
 
@@ -93,18 +93,15 @@ makeKeyboardRow i k =
     filterKeyboardRow i k |> sortKeyboardRow |> renderKeyboardRow
 
 
-onKeyDown : (Int -> msg) -> Attribute msg
-onKeyDown tagger =
-    on "keydown" (Json.map tagger keyCode)
+handleKeyDown : msg -> Attribute (Int -> Msg)
+handleKeyDown message =
+    custom "keydown" (Json.succeed { message = KeyPressed, stopPropagation = True, preventDefault = True })
 
 
 view : Model -> Html Msg
 view model =
     div []
-        [ makeKeyboardRow 2 model.keys
-        , div [ onKeyDown KeyPressed ]
-            [ text "hey" ]
-        , input
-            [ onKeyDown KeyPressed ]
+        [ input
+            [ handleKeyDown ]
             [ text "" ]
         ]
